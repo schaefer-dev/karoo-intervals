@@ -82,14 +82,17 @@ object WorkoutRunner {
         }
     }
 
+    /** The simulator stays silent (no beeps, no laps) — it's for checking the screen, not riding. */
     private fun handle(k: KarooSystemService, event: WorkoutEvent, simulated: Boolean) {
         when (event) {
-            is WorkoutEvent.Countdown -> k.dispatch(
+            is WorkoutEvent.Countdown -> if (!simulated) k.dispatch(
                 PlayBeepPattern(listOf(PlayBeepPattern.Tone(if (event.secondsLeft == 1) 2000 else 1500, 150))),
             )
             is WorkoutEvent.StepStarted -> {
-                if (!simulated) k.dispatch(MarkLap)
-                k.dispatch(PlayBeepPattern(listOf(PlayBeepPattern.Tone(2500, 400))))
+                if (!simulated) {
+                    k.dispatch(MarkLap)
+                    k.dispatch(PlayBeepPattern(listOf(PlayBeepPattern.Tone(2500, 400))))
+                }
                 k.dispatch(
                     InRideAlert(
                         id = "step",
@@ -103,7 +106,7 @@ object WorkoutRunner {
                 )
             }
             WorkoutEvent.Finished -> {
-                k.dispatch(PlayBeepPattern(List(3) { PlayBeepPattern.Tone(2500, 200) }.flatMap { listOf(it, PlayBeepPattern.Tone(null, 100)) }))
+                if (!simulated) k.dispatch(PlayBeepPattern(List(3) { PlayBeepPattern.Tone(2500, 200) }.flatMap { listOf(it, PlayBeepPattern.Tone(null, 100)) }))
                 k.dispatch(
                     InRideAlert(
                         id = "done",

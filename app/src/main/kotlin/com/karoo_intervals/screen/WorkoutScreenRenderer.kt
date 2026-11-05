@@ -162,6 +162,8 @@ object WorkoutScreenRenderer {
         val nextLine = next?.let { it.summary() } ?: if (st.finished) st.workout.name else "Finish strong"
         val nextPaint = text(H * 0.05f, t.fg, heavy = true)
         val maxTextW = W * (1 - Layout.SKIP_ZONE) - pad * 2
+        // Shrink to fit (down to 75 %) before falling back to an ellipsis.
+        while (nextPaint.measureText(nextLine) > maxTextW && nextPaint.textSize > H * 0.0375f) nextPaint.textSize *= 0.95f
         c.drawText(ellipsize(nextLine, nextPaint, maxTextW), pad * 2, nTop + (nBot - nTop) * 0.78f, nextPaint)
         if (!st.finished && st.started) {
             val bSize = (nBot - nTop) * 0.72f
