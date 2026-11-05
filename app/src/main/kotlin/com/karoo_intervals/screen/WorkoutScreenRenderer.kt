@@ -114,6 +114,7 @@ object WorkoutScreenRenderer {
         val rowBase = H * (Layout.INTERVAL_END - 0.015f)
         val label = when {
             st.finished -> "Workout complete"
+            st.paused -> "Workout paused"
             !st.started -> "Ready · starts with ride"
             else -> "Interval ${st.stepIndex + 1} / ${st.stepCount}"
         }

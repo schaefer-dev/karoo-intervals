@@ -144,4 +144,28 @@ class WorkoutCoordinatorTest {
         assertEquals(7, st.stepRemainingSec)
         job.cancel()
     }
+
+    @Test
+    fun `workout pause holds the workout clock while the ride keeps recording`() = runTest {
+        val h = Harness(workout)
+        val out = mutableListOf<WorkoutUpdate>()
+        val job = launch { h.coordinator.run().toList(out) }
+        testScheduler.runCurrent()
+        h.ride.emit(RideState.Recording)
+        for (t in 0..4) { h.elapsed.emit(sp(DataType.Type.ELAPSED_TIME, t.toDouble())); testScheduler.runCurrent() }
+        h.cmds.emit(WorkoutCommand.TOGGLE_PAUSE); testScheduler.runCurrent()
+        assertTrue(out.last().state!!.paused)
+        for (t in 5..30) { h.elapsed.emit(sp(DataType.Type.ELAPSED_TIME, t.toDouble())); testScheduler.runCurrent() }
+        var st = out.last().state!!
+        assertEquals(0, st.stepIndex)
+        assertEquals(6, st.stepRemainingSec) // 4 s ridden before the pause, frozen since
+        assertEquals(TargetStatus.NONE, st.powerStatus)
+        h.cmds.emit(WorkoutCommand.TOGGLE_PAUSE); testScheduler.runCurrent()
+        for (t in 31..33) { h.elapsed.emit(sp(DataType.Type.ELAPSED_TIME, t.toDouble())); testScheduler.runCurrent() }
+        st = out.last().state!!
+        assertEquals(false, st.paused)
+        assertEquals(3, st.stepRemainingSec)
+        assertEquals(7.0, st.totalElapsedSec, 1e-9)
+        job.cancel()
+    }
 }

@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 
-enum class WorkoutCommand { SKIP, RESTART }
+enum class WorkoutCommand { SKIP, RESTART, TOGGLE_PAUSE }
 
 data class WorkoutUpdate(val state: WorkoutState?, val events: List<WorkoutEvent> = emptyList())
 
@@ -83,6 +83,7 @@ class WorkoutCoordinator(
                 }
                 is Input.Cmd -> when (input.cmd) {
                     WorkoutCommand.SKIP -> session?.let { emit(snapshot(it.skip())) }
+                    WorkoutCommand.TOGGLE_PAUSE -> session?.let { it.togglePause(); emit(snapshot()) }
                     WorkoutCommand.RESTART -> {
                         session = current?.let { WorkoutSession(it) }
                         emit(snapshot())

@@ -16,6 +16,8 @@ data class WorkoutState(
     val heartRate: Int?,
     val started: Boolean,
     val finished: Boolean,
+    /** Workout clock held by the rider (the ride recording keeps going). */
+    val paused: Boolean = false,
 ) {
     val step: Step get() = workout.steps[stepIndex]
     val nextStep: Step? get() = workout.steps.getOrNull(stepIndex + 1)
@@ -27,9 +29,9 @@ data class WorkoutState(
     val totalProgress: Float get() =
         (totalElapsedSec / workout.totalSec).toFloat().coerceIn(0f, 1f)
     val powerStatus: TargetStatus get() =
-        if (!started || finished) TargetStatus.NONE else TargetJudge.power(step, stepElapsedSec, power3s)
+        if (!started || finished || paused) TargetStatus.NONE else TargetJudge.power(step, stepElapsedSec, power3s)
     val lapStatus: TargetStatus get() =
-        if (!started || finished) TargetStatus.NONE else TargetJudge.lap(step, stepElapsedSec, lapAvgW)
+        if (!started || finished || paused) TargetStatus.NONE else TargetJudge.lap(step, stepElapsedSec, lapAvgW)
 }
 
 sealed interface WorkoutEvent {
@@ -44,7 +46,8 @@ sealed interface WorkoutEvent {
  * Pure workout state machine driven by ride time (ELAPSED_TIME in **seconds**, which auto-pauses).
  *
  * The workout clock starts at the first [tick] and advances only by elapsed-time deltas, so a
- * paused ride pauses the workout. [skip] ends the current step immediately.
+ * paused ride pauses the workout. [togglePause] holds only the workout clock (the recording keeps
+ * running). [skip] ends the current step immediately.
  */
 class WorkoutSession(val workout: Workout) {
     var stepIndex = 0
@@ -56,6 +59,7 @@ class WorkoutSession(val workout: Workout) {
     private var lapEnergy = 0.0 // W·s within the current step
     private var lapTime = 0.0
     private val recentPower = ArrayDeque<Double>()
+    private var paused = false
 
     val isStarted: Boolean get() = workoutStart != null
     val isFinished: Boolean get() = finished
@@ -75,6 +79,13 @@ class WorkoutSession(val workout: Workout) {
             stepStart = elapsed
             return events
         }
+        if (paused) {
+            // Freeze the workout clock: shift its anchors by the ride time that passed.
+            val delta = if (prev == null) 0.0 else (elapsed - prev).coerceAtLeast(0.0)
+            stepStart = stepStart!! + delta
+            workoutStart = workoutStart!! + delta
+            return events
+        }
         val dt = if (prev == null) 0.0 else (elapsed - prev).coerceIn(0.0, 5.0)
         if (dt > 0 && power != null) {
             lapEnergy += power * dt
@@ -92,6 +103,11 @@ class WorkoutSession(val workout: Workout) {
             advance(end, events)
         }
         return events
+    }
+
+    /** Hold / resume the workout clock. No-op before the workout started or after it finished. */
+    fun togglePause() {
+        if (workoutStart != null && !finished) paused = !paused
     }
 
     /** End the current step now (at the last seen ride time). */
@@ -134,6 +150,7 @@ class WorkoutSession(val workout: Workout) {
             heartRate = heartRate,
             started = isStarted,
             finished = finished,
+            paused = paused,
         )
     }
 }

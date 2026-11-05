@@ -10,9 +10,7 @@ import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.InRideAlert
 import io.hammerhead.karooext.models.MarkLap
-import io.hammerhead.karooext.models.PauseRide
 import io.hammerhead.karooext.models.PlayBeepPattern
-import io.hammerhead.karooext.models.ResumeRide
 import io.hammerhead.karooext.models.RideState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -52,15 +50,6 @@ object WorkoutRunner {
 
     fun command(cmd: WorkoutCommand) {
         commands.tryEmit(cmd)
-    }
-
-    fun togglePause() {
-        val k = karoo ?: return
-        when (_rideState.value) {
-            is RideState.Recording -> k.dispatch(PauseRide)
-            is RideState.Paused -> k.dispatch(ResumeRide)
-            else -> Unit
-        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

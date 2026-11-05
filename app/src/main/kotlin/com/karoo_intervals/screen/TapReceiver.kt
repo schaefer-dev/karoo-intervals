@@ -11,7 +11,7 @@ class TapReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             ACTION_SKIP -> WorkoutRunner.command(WorkoutCommand.SKIP)
-            ACTION_PAUSE -> WorkoutRunner.togglePause()
+            ACTION_PAUSE -> WorkoutRunner.command(WorkoutCommand.TOGGLE_PAUSE)
         }
     }
 

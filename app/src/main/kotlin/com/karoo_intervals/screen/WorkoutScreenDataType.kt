@@ -66,7 +66,7 @@ class WorkoutScreenDataType(
                     state = st,
                     livePower = p,
                     liveHr = h,
-                    paused = ride is RideState.Paused,
+                    paused = st?.paused == true,
                     simulated = sim,
                 )
             }.conflate().collect { input ->
