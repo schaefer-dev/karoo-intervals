@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Intervals Screen</string>
+    <string name="field_name">Workout Screen</string>
+    <string name="field_desc">Full-page intervals.icu workout. Put it alone on its own page at full size.</string>
+</resources>

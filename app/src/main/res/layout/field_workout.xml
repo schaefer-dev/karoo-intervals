@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bitmap + transparent tap zones. Weights must match WorkoutScreenRenderer.Layout:
+     safe top 0.00-0.01, header 0.01-0.09, body 0.09-0.67, next card 0.67-0.80, graph 0.80-1.00;
+     gear / pause = 20 % width, skip = 25 % width. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/screen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:contentDescription="@null" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="100">
+
+        <FrameLayout
+            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="8"
+            android:orientation="horizontal"
+            android:weightSum="100">
+            <FrameLayout android:id="@+id/tap_settings"
+                android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="20" />
+            <FrameLayout
+                android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="60" />
+            <FrameLayout android:id="@+id/tap_pause"
+                android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="20" />
+        </LinearLayout>
+
+        <FrameLayout android:id="@+id/tap_body"
+            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="58" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="13"
+            android:orientation="horizontal"
+            android:weightSum="100">
+            <FrameLayout
+                android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="75" />
+            <FrameLayout android:id="@+id/tap_skip"
+                android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="25" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="20" />
+    </LinearLayout>
+</FrameLayout>

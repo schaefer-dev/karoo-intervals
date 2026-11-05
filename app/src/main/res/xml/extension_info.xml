@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ExtensionInfo
+    displayName="@string/app_name"
+    icon="@drawable/ic_workout"
+    id="karoo_intervals"
+    scansDevices="false">
+
+    <DataType
+        typeId="workout_screen"
+        displayName="@string/field_name"
+        description="@string/field_desc"
+        icon="@drawable/ic_workout"
+        graphical="true" />
+</ExtensionInfo>

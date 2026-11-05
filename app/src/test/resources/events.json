@@ -1,0 +1,385 @@
+[
+ {
+  "id": 130324191,
+  "name": "3x6x30/30",
+  "type": "Ride",
+  "start_date_local": "2026-08-19T00:00:00",
+  "moving_time": 3480,
+  "category": "WORKOUT",
+  "workout_doc": {
+   "duration": 3480,
+   "steps": [
+    {
+     "text": "Warm up",
+     "power": {
+      "end": 60,
+      "start": 50,
+      "units": "%ftp"
+     },
+     "duration": 300
+    },
+    {
+     "reps": 1,
+     "text": "1x",
+     "steps": [
+      {
+       "power": {
+        "end": 65,
+        "start": 55,
+        "units": "%ftp"
+       },
+       "duration": 180
+      },
+      {
+       "power": {
+        "end": 75,
+        "start": 65,
+        "units": "%ftp"
+       },
+       "duration": 180
+      },
+      {
+       "power": {
+        "end": 85,
+        "start": 75,
+        "units": "%ftp"
+       },
+       "duration": 180
+      },
+      {
+       "power": {
+        "end": 95,
+        "start": 85,
+        "units": "%ftp"
+       },
+       "duration": 180
+      }
+     ],
+     "distance": 0,
+     "duration": 720
+    },
+    {
+     "text": "Recovery",
+     "power": {
+      "end": 60,
+      "start": 50,
+      "units": "%ftp"
+     },
+     "duration": 300
+    },
+    {
+     "reps": 6,
+     "text": "6x",
+     "steps": [
+      {
+       "text": "Hard",
+       "power": {
+        "end": 135,
+        "start": 125,
+        "units": "%ftp"
+       },
+       "cadence": {
+        "end": 110,
+        "start": 90,
+        "units": "rpm"
+       },
+       "duration": 30
+      },
+      {
+       "text": "Easy",
+       "power": {
+        "end": 55,
+        "start": 50,
+        "units": "%ftp"
+       },
+       "duration": 30
+      }
+     ],
+     "distance": 0,
+     "duration": 360
+    },
+    {
+     "text": "Recovery",
+     "power": {
+      "end": 60,
+      "start": 50,
+      "units": "%ftp"
+     },
+     "duration": 360
+    },
+    {
+     "reps": 6,
+     "text": "6x",
+     "steps": [
+      {
+       "text": "Hard",
+       "power": {
+        "end": 135,
+        "start": 125,
+        "units": "%ftp"
+       },
+       "cadence": {
+        "end": 110,
+        "start": 90,
+        "units": "rpm"
+       },
+       "duration": 30
+      },
+      {
+       "text": "Easy",
+       "power": {
+        "end": 55,
+        "start": 50,
+        "units": "%ftp"
+       },
+       "duration": 30
+      }
+     ],
+     "distance": 0,
+     "duration": 360
+    },
+    {
+     "text": "Recovery",
+     "power": {
+      "end": 60,
+      "start": 50,
+      "units": "%ftp"
+     },
+     "duration": 360
+    },
+    {
+     "reps": 6,
+     "text": "6x",
+     "steps": [
+      {
+       "text": "Hard",
+       "power": {
+        "end": 135,
+        "start": 125,
+        "units": "%ftp"
+       },
+       "cadence": {
+        "end": 110,
+        "start": 90,
+        "units": "rpm"
+       },
+       "duration": 30
+      },
+      {
+       "text": "Easy",
+       "power": {
+        "end": 55,
+        "start": 50,
+        "units": "%ftp"
+       },
+       "duration": 30
+      }
+     ],
+     "distance": 0,
+     "duration": 360
+    },
+    {
+     "text": "Recovery",
+     "power": {
+      "end": 60,
+      "start": 50,
+      "units": "%ftp"
+     },
+     "duration": 360
+    }
+   ]
+  }
+ },
+ {
+  "id": 117388219,
+  "name": "LIT 90 \u2013 Z2 (HF-Deckel 145)",
+  "type": "Ride",
+  "start_date_local": "2026-06-24T00:00:00",
+  "moving_time": 5100,
+  "category": "WORKOUT",
+  "workout_doc": {
+   "duration": 5100,
+   "steps": [
+    {
+     "power": {
+      "end": 62,
+      "start": 50,
+      "units": "%ftp"
+     },
+     "warmup": true,
+     "duration": 300
+    },
+    {
+     "power": {
+      "units": "power_zone",
+      "value": 2
+     },
+     "cadence": {
+      "units": "rpm",
+      "value": 88
+     },
+     "duration": 4500
+    },
+    {
+     "power": {
+      "units": "%ftp",
+      "value": 50
+     },
+     "cooldown": true,
+     "duration": 300
+    }
+   ]
+  }
+ },
+ {
+  "id": 109045980,
+  "name": "Laktat-Stufentest (LT1/LT2 Kalibrierung)",
+  "type": "Ride",
+  "start_date_local": "2026-06-17T00:00:00",
+  "moving_time": 3420,
+  "category": "WORKOUT",
+  "workout_doc": {
+   "duration": 3420,
+   "steps": [
+    {
+     "power": {
+      "units": "%ftp",
+      "value": 39
+     },
+     "warmup": true,
+     "duration": 900
+    },
+    {
+     "power": {
+      "units": "w",
+      "value": 120
+     },
+     "duration": 240
+    },
+    {
+     "power": {
+      "units": "w",
+      "value": 145
+     },
+     "duration": 240
+    },
+    {
+     "power": {
+      "units": "w",
+      "value": 170
+     },
+     "duration": 240
+    },
+    {
+     "power": {
+      "units": "w",
+      "value": 195
+     },
+     "duration": 240
+    },
+    {
+     "power": {
+      "units": "w",
+      "value": 220
+     },
+     "duration": 240
+    },
+    {
+     "power": {
+      "units": "w",
+      "value": 245
+     },
+     "duration": 240
+    },
+    {
+     "power": {
+      "units": "w",
+      "value": 270
+     },
+     "duration": 240
+    },
+    {
+     "power": {
+      "units": "w",
+      "value": 290
+     },
+     "duration": 240
+    },
+    {
+     "power": {
+      "units": "%ftp",
+      "value": 39
+     },
+     "cooldown": true,
+     "duration": 600
+    }
+   ]
+  }
+ },
+ {
+  "id": 117388341,
+  "name": "Long LIT 3h + Torque-Openers (outdoor)",
+  "type": "Ride",
+  "start_date_local": "2026-06-28T00:00:00",
+  "moving_time": 10920,
+  "category": "WORKOUT",
+  "workout_doc": {
+   "duration": 10920,
+   "steps": [
+    {
+     "power": {
+      "end": 62,
+      "start": 50,
+      "units": "%ftp"
+     },
+     "warmup": true,
+     "duration": 600
+    },
+    {
+     "reps": 3,
+     "text": "3x ",
+     "steps": [
+      {
+       "power": {
+        "units": "%ftp",
+        "value": 75
+       },
+       "cadence": {
+        "units": "rpm",
+        "value": 50
+       },
+       "duration": 60,
+       "freeride": true
+      },
+      {
+       "power": {
+        "units": "power_zone",
+        "value": 2
+       },
+       "duration": 600,
+       "freeride": true
+      }
+     ],
+     "distance": 0,
+     "duration": 1980
+    },
+    {
+     "power": {
+      "units": "power_zone",
+      "value": 2
+     },
+     "duration": 7740,
+     "freeride": true
+    },
+    {
+     "power": {
+      "units": "%ftp",
+      "value": 52
+     },
+     "cooldown": true,
+     "duration": 600
+    }
+   ]
+  }
+ }
+]
