@@ -225,8 +225,9 @@ private fun Section(title: String) {
 private fun SmallButton(text: String, bg: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Button(
         onClick = onClick, shape = RoundedCornerShape(10.dp), modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp),
         colors = ButtonDefaults.buttonColors(containerColor = bg.copy(alpha = 1f), contentColor = MaterialTheme.colorScheme.onSurface),
-    ) { Text(text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold) }
+    ) { Text(text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
 }
 
 @Composable

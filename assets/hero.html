@@ -1,0 +1,138 @@
+<!doctype html>
+<!--
+  Source for assets/hero.png. Regenerate with:
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars \
+    --window-size=1280,640 --force-device-scale-factor=2 --virtual-time-budget=4000 \
+    --screenshot=assets/hero.png "file://$PWD/assets/hero.html"
+  The device screens are real Karoo 3 screenshots (screen-dark.png / screen-light.png).
+  Zone colors mirror workout/Zones.kt.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Karoo Intervals hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;800&family=Barlow:wght@400;500&display=block" rel="stylesheet">
+<style>
+  :root {
+    --fog: #E4EAEE;
+    --fog-deep: #CBD5DC;
+    --ink: #14202A;
+    --ink-soft: #4A5965;
+    --bezel: #1C2126;
+    --z1: #8FA3AD; --z2: #1FA37A; --z3: #6AA329; --z4: #E0A030; --z5: #C47A1C; --z6: #E2603A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 640px; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(1200px 520px at 20% 0%, #F2F5F7 0%, transparent 60%),
+      linear-gradient(180deg, var(--fog) 0%, var(--fog-deep) 100%);
+    color: var(--ink);
+    font-family: "Barlow", sans-serif;
+    position: relative;
+  }
+
+  /* ---- Workout profile across the bottom: the memorable element ---- */
+  .profile { position: absolute; left: 0; right: 0; bottom: 0; height: 110px; opacity: 0.55; }
+
+  /* ---- Copy ---- */
+  .copy { position: absolute; left: 72px; top: 70px; width: 640px; }
+  .wordmark {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 104px; line-height: 0.86; letter-spacing: -1px;
+  }
+  .wordmark span { display: block; }
+  .tagline {
+    margin-top: 26px;
+    font-family: "Barlow Condensed", sans-serif; font-weight: 500;
+    font-size: 34px; line-height: 1.15; max-width: 560px;
+  }
+  .sub { margin-top: 14px; font-size: 19px; line-height: 1.45; color: var(--ink-soft); max-width: 520px; }
+
+  .legend {
+    position: absolute; left: 72px; top: 450px;
+    display: flex; gap: 22px;
+    font-family: "Barlow Condensed", sans-serif; font-weight: 600; font-size: 20px; color: var(--ink-soft);
+  }
+  .legend b { font-weight: 800; }
+  .legend .below { color: #1E6FD9; } .legend .in { color: #14995A; } .legend .above { color: #D62F35; }
+
+  /* ---- Karoo 3 mockups ---- */
+  .device {
+    position: absolute; width: 300px; height: 506px;
+    background: linear-gradient(160deg, #2A3037 0%, var(--bezel) 45%, #121619 100%);
+    border-radius: 42px;
+    box-shadow:
+      0 40px 70px -30px rgba(20, 32, 42, 0.55),
+      0 0 0 2px #0E1114,
+      inset 0 1px 0 rgba(255,255,255,0.12);
+    padding: 24px 20px 54px;
+  }
+  .device::after {
+    content: ""; position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+    width: 92px; height: 13px; border-radius: 7px; background: #2C333A;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
+  }
+  .btn { position: absolute; width: 6px; height: 52px; border-radius: 3px; background: #2C333A; }
+  .btn.l1 { left: -5px; top: 100px; } .btn.r1 { right: -5px; top: 100px; }
+  .btn.l2 { left: -5px; top: 360px; } .btn.r2 { right: -5px; top: 360px; }
+  .device img { width: 100%; height: 100%; border-radius: 8px; display: block; object-fit: cover; object-position: top; }
+
+  .light { right: 340px; top: 74px; transform: rotate(-5deg); }
+  .dark  { right: 60px;  top: 50px; transform: rotate(4deg); }
+</style>
+</head>
+<body>
+
+<svg class="profile" viewBox="0 0 1280 110" preserveAspectRatio="none" aria-hidden="true" id="profile"></svg>
+
+<div class="copy">
+  <div class="wordmark"><span>Karoo</span><span>Intervals</span></div>
+  <p class="tagline">Your intervals.icu workouts on a full-page Karoo screen.</p>
+  <p class="sub">Big live power colored against the target, time left in the interval, what's next, and the whole workout at a glance.</p>
+</div>
+
+<div class="legend">
+  <span class="below"><b>▲</b> below</span>
+  <span class="in"><b>●</b> on target</span>
+  <span class="above"><b>▼</b> above</span>
+</div>
+
+<div class="device light">
+  <span class="btn l1"></span><span class="btn r1"></span><span class="btn l2"></span><span class="btn r2"></span>
+  <img src="screen-light.png" alt="">
+</div>
+<div class="device dark">
+  <span class="btn l1"></span><span class="btn r1"></span><span class="btn l2"></span><span class="btn r2"></span>
+  <img src="screen-dark.png" alt="">
+</div>
+
+<script>
+  // 3x8x30/30: warm-up stairs, three blocks of 30/30, recoveries. [seconds, %FTP, zone]
+  const z = (pct) => pct <= 55 ? 1 : pct <= 75 ? 2 : pct <= 90 ? 3 : pct <= 105 ? 4 : pct <= 120 ? 5 : 6;
+  const steps = [[300, 55], [180, 60], [180, 70], [180, 80], [180, 90], [300, 55]];
+  for (let b = 0; b < 3; b++) {
+    for (let i = 0; i < 8; i++) steps.push([30, 130], [30, 52]);
+    steps.push([360, 55]);
+  }
+  const total = steps.reduce((a, s) => a + s[0], 0);
+  const svg = document.getElementById('profile');
+  const W = 1280, H = 110, max = 140;
+  let x = 0;
+  const colors = getComputedStyle(document.documentElement);
+  for (const [d, pct] of steps) {
+    const w = d / total * W;
+    const h = pct / max * (H - 10);
+    const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    r.setAttribute('x', x); r.setAttribute('y', H - h);
+    r.setAttribute('width', Math.max(w - 1.5, 1)); r.setAttribute('height', h);
+    r.setAttribute('fill', colors.getPropertyValue('--z' + z(pct)).trim());
+    r.setAttribute('opacity', '0.85');
+    svg.appendChild(r);
+    x += w;
+  }
+</script>
+</body>
+</html>
