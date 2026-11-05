@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Bitmap + transparent tap zones. Weights must match WorkoutScreenRenderer.Layout:
-     safe top 0.00-0.01, header 0.01-0.09, body 0.09-0.67, next card 0.67-0.80, graph 0.80-1.00;
+     safe top 0.00-0.01, gear/pause tap zones 0.01-0.21 (drawn icons sit at 0.01-0.09;
+     Karoo swallows touches near the top edge, so the zones extend down beside the big number),
+     body 0.21-0.67, next card 0.67-0.80, graph 0.80-1.00;
      gear / pause = 20 % width, skip = 25 % width. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -25,7 +27,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="8"
+            android:layout_weight="20"
             android:orientation="horizontal"
             android:weightSum="100">
             <FrameLayout android:id="@+id/tap_settings"
@@ -37,7 +39,7 @@
         </LinearLayout>
 
         <FrameLayout android:id="@+id/tap_body"
-            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="58" />
+            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="46" />
 
         <LinearLayout
             android:layout_width="match_parent"

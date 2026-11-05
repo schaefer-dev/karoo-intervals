@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Typeface
+import com.karoo_intervals.engine.TargetStatus
 import com.karoo_intervals.engine.WorkoutState
 import com.karoo_intervals.workout.Profile
 import com.karoo_intervals.workout.Workout
@@ -45,6 +46,16 @@ object WorkoutScreenRenderer {
         val skipFg = 0xFF0B3A6E.toInt()
         val heart = 0xFFE5484D.toInt()
         val done = if (dark) 0x99000000.toInt() else 0x99FFFFFF.toInt()
+        val below = if (dark) 0xFF5AB0FF.toInt() else 0xFF1E6FD9.toInt()
+        val inRange = if (dark) 0xFF3DD68C.toInt() else 0xFF14995A.toInt()
+        val above = if (dark) 0xFFFF5A5F.toInt() else 0xFFD62F35.toInt()
+
+        fun forStatus(s: TargetStatus): Int = when (s) {
+            TargetStatus.BELOW -> below
+            TargetStatus.IN_RANGE -> inRange
+            TargetStatus.ABOVE -> above
+            TargetStatus.NONE -> fg
+        }
     }
 
     data class Input(
@@ -69,10 +80,10 @@ object WorkoutScreenRenderer {
 
         // ---- header: gear · ♥ HR · pause
         val hy = H * (Layout.SAFE_TOP + Layout.HEADER_END) / 2
-        val iconR = H * 0.022f
+        val iconR = H * 0.025f
         drawGear(c, pad + iconR, hy, iconR, t.muted)
         val hr = st?.heartRate ?: input.liveHr
-        val hrPaint = text(H * 0.04f, t.fg, bold = true)
+        val hrPaint = text(H * 0.048f, t.fg, bold = true)
         val hrText = hr?.toString() ?: "--"
         val hrW = hrPaint.measureText(hrText) + iconR * 2.6f
         drawHeart(c, W / 2 - hrW / 2 + iconR, hy, iconR, t.heart)
@@ -84,9 +95,13 @@ object WorkoutScreenRenderer {
 
         // ---- big power
         val power = st?.power3s ?: input.livePower
-        val bigPaint = text(H * 0.21f, t.fg, bold = true, align = Paint.Align.CENTER)
+        val pStatus = st?.powerStatus ?: TargetStatus.NONE
+        val bigPaint = text(H * 0.25f, t.forStatus(pStatus), heavy = true, align = Paint.Align.CENTER)
         val powerMid = (Layout.HEADER_END + Layout.POWER_END) / 2 * H
-        c.drawText(power?.toString() ?: "--", W / 2, powerMid + bigPaint.textSize * 0.36f, bigPaint)
+        val powerText = power?.toString() ?: "--"
+        c.drawText(powerText, W / 2, powerMid + bigPaint.textSize * 0.36f, bigPaint)
+        val arrowX = W / 2 + bigPaint.measureText(powerText) / 2 + H * 0.05f
+        drawStatusArrow(c, pStatus, arrowX, powerMid, H * 0.04f, t.forStatus(pStatus))
 
         if (st == null) {
             val p = text(H * 0.035f, t.muted, align = Paint.Align.CENTER)
@@ -102,9 +117,9 @@ object WorkoutScreenRenderer {
             !st.started -> "Ready · starts with ride"
             else -> "Interval ${st.stepIndex + 1} / ${st.stepCount}"
         }
-        c.drawText(label, pad, rowBase, text(H * 0.032f, t.muted, bold = true))
+        c.drawText(label, pad, rowBase, text(H * 0.034f, t.muted, bold = true))
         val clock = formatClock(if (st.started) st.stepRemainingSec else st.step.durationSec)
-        c.drawText(clock, W - pad, rowBase, text(H * 0.07f, t.fg, bold = true, align = Paint.Align.RIGHT))
+        c.drawText(clock, W - pad, rowBase, text(H * 0.092f, t.fg, heavy = true, align = Paint.Align.RIGHT))
 
         // ---- progress bar
         val pTop = H * (Layout.INTERVAL_END + 0.008f)
@@ -121,7 +136,7 @@ object WorkoutScreenRenderer {
         val tBot = H * Layout.TILES_END - pad * 0.3f
         val gap = pad * 0.6f
         val tileW = (W - 2 * pad - gap) / 2
-        tile(c, t, RectF(pad, tTop, pad + tileW, tBot), "Lap avg", st.lapAvgW?.toString() ?: "--", H)
+        tile(c, t, RectF(pad, tTop, pad + tileW, tBot), "Lap avg", st.lapAvgW?.toString() ?: "--", H, st.lapStatus)
         val targetText = when {
             st.finished -> "--"
             st.targetW != null -> st.targetW.toString()
@@ -142,9 +157,9 @@ object WorkoutScreenRenderer {
             next == null -> "Last interval"
             else -> "Next · Interval ${st.stepIndex + 2} / ${st.stepCount}"
         }
-        c.drawText(nextTitle, pad * 2, nTop + (nBot - nTop) * 0.38f, text(H * 0.027f, t.muted))
+        c.drawText(nextTitle, pad * 2, nTop + (nBot - nTop) * 0.36f, text(H * 0.03f, t.muted))
         val nextLine = next?.let { it.summary() } ?: if (st.finished) st.workout.name else "Finish strong"
-        val nextPaint = text(H * 0.04f, t.fg, bold = true)
+        val nextPaint = text(H * 0.05f, t.fg, heavy = true)
         val maxTextW = W * (1 - Layout.SKIP_ZONE) - pad * 2
         c.drawText(ellipsize(nextLine, nextPaint, maxTextW), pad * 2, nTop + (nBot - nTop) * 0.78f, nextPaint)
         if (!st.finished && st.started) {
@@ -186,12 +201,37 @@ object WorkoutScreenRenderer {
         c.drawText(formatClock(workout.totalSec), area.centerX(), area.bottom + H * 0.03f, total)
     }
 
-    private fun tile(c: Canvas, t: Theme, r: RectF, label: String, value: String, H: Float) {
+    private fun tile(
+        c: Canvas, t: Theme, r: RectF, label: String, value: String, H: Float,
+        status: TargetStatus = TargetStatus.NONE,
+    ) {
         val rad = H * 0.012f
         c.drawRoundRect(r, rad, rad, fill(t.tile))
         val x = r.left + r.width() * 0.08f
-        c.drawText(label, x, r.top + r.height() * 0.32f, text(H * 0.026f, t.muted))
-        c.drawText(value, x, r.top + r.height() * 0.82f, text(H * 0.06f, t.fg, bold = true))
+        c.drawText(label, x, r.top + r.height() * 0.32f, text(H * 0.03f, t.muted))
+        val color = t.forStatus(status)
+        val vp = text(H * 0.078f, color, heavy = true)
+        val baseline = r.top + r.height() * 0.86f
+        c.drawText(value, x, baseline, vp)
+        drawStatusArrow(c, status, x + vp.measureText(value) + H * 0.03f, baseline - vp.textSize * 0.36f, H * 0.02f, color)
+    }
+
+    /** ▲ = more power needed (below target), ▼ = ease off (above target). Nothing when in range. */
+    private fun drawStatusArrow(c: Canvas, status: TargetStatus, cx: Float, cy: Float, r: Float, color: Int) {
+        val up = when (status) {
+            TargetStatus.BELOW -> true
+            TargetStatus.ABOVE -> false
+            else -> return
+        }
+        val path = Path().apply {
+            if (up) {
+                moveTo(cx, cy - r); lineTo(cx + r, cy + r * 0.8f); lineTo(cx - r, cy + r * 0.8f)
+            } else {
+                moveTo(cx, cy + r); lineTo(cx + r, cy - r * 0.8f); lineTo(cx - r, cy - r * 0.8f)
+            }
+            close()
+        }
+        c.drawPath(path, fill(color))
     }
 
     private fun ellipsize(s: String, p: Paint, maxW: Float): String {
@@ -249,13 +289,25 @@ object WorkoutScreenRenderer {
     }
 
     // ---- paints
-    private fun text(size: Float, color: Int, bold: Boolean = false, align: Paint.Align = Paint.Align.LEFT) =
-        Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            textSize = size
-            this.color = color
-            textAlign = align
-            typeface = if (bold) Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD) else Typeface.SANS_SERIF
+    private val boldFace: Typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+
+    /** Extra-bold for the glanceable numbers (weight API needs Android 9; Karoo 2 falls back to bold). */
+    private val heavyFace: Typeface =
+        if (android.os.Build.VERSION.SDK_INT >= 28) Typeface.create(Typeface.SANS_SERIF, 800, false) else boldFace
+
+    private fun text(
+        size: Float, color: Int, bold: Boolean = false, heavy: Boolean = false,
+        align: Paint.Align = Paint.Align.LEFT,
+    ) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = size
+        this.color = color
+        textAlign = align
+        typeface = when {
+            heavy -> heavyFace
+            bold -> boldFace
+            else -> Typeface.SANS_SERIF
         }
+    }
 
     private fun fill(color: Int) = Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = color; style = Paint.Style.FILL }
     private fun stroke(color: Int, width: Float) = Paint(Paint.ANTI_ALIAS_FLAG).apply {

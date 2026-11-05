@@ -26,6 +26,10 @@ data class WorkoutState(
         if (finished) 1f else (stepElapsedSec / step.durationSec).toFloat().coerceIn(0f, 1f)
     val totalProgress: Float get() =
         (totalElapsedSec / workout.totalSec).toFloat().coerceIn(0f, 1f)
+    val powerStatus: TargetStatus get() =
+        if (!started || finished) TargetStatus.NONE else TargetJudge.power(step, stepElapsedSec, power3s)
+    val lapStatus: TargetStatus get() =
+        if (!started || finished) TargetStatus.NONE else TargetJudge.lap(step, stepElapsedSec, lapAvgW)
 }
 
 sealed interface WorkoutEvent {
