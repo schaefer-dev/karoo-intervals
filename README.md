@@ -136,6 +136,14 @@ adb install -r app/build/outputs/apk/release/karoo_intervals_screen-0.1.0-releas
 Debug builds read `INTERVALS_ICU_API_KEY=...` from a git-ignored `.env` file in the repo root, so
 you don't have to type the key on the Karoo. Release builds never contain a key.
 
+For your own Karoo, build the **personal** variant: a release build (no debug, no simulator) with
+the key from `.env` built in, so it syncs without entering a key on the device. Don't share it.
+
+```sh
+./gradlew :app:assemblePersonal
+adb install -r app/build/outputs/apk/personal/karoo_intervals_screen-0.1.0-personal.apk
+```
+
 Debug builds also have a **Simulator** switch under 👤: synthetic power and heart rate at 5× speed,
 with power following the target. It stays silent (no beeps, no laps) and shows a red **SIM**
 marker. Turn it off before a real ride.

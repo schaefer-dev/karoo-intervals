@@ -68,8 +68,10 @@ object WorkoutScreenRenderer {
     )
 
     fun render(input: Input, w: Int, h: Int, dark: Boolean, reuse: Bitmap? = null): Bitmap {
-        val bmp = reuse?.takeIf { it.width == w && it.height == h && it.isMutable }
-            ?: Bitmap.createBitmap(w.coerceAtLeast(1), h.coerceAtLeast(1), Bitmap.Config.ARGB_8888)
+        // RGB_565: the screen is always fully opaque, so no alpha channel is needed. Half the bytes
+        // of ARGB_8888 for every frame copied to and drawn by the Karoo.
+        val bmp = reuse?.takeIf { it.width == w && it.height == h && it.isMutable && it.config == Bitmap.Config.RGB_565 }
+            ?: Bitmap.createBitmap(w.coerceAtLeast(1), h.coerceAtLeast(1), Bitmap.Config.RGB_565)
         val c = Canvas(bmp)
         val t = Theme(dark)
         c.drawColor(t.bg)

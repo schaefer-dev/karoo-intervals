@@ -17,10 +17,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 /**
@@ -31,9 +32,6 @@ import kotlinx.coroutines.launch
 object WorkoutRunner {
     private val _state = MutableStateFlow<WorkoutState?>(null)
     val state: StateFlow<WorkoutState?> = _state
-
-    private val _rideState = MutableStateFlow<RideState>(RideState.Idle)
-    val rideState: StateFlow<RideState> = _rideState
 
     private val _simulated = MutableStateFlow(false)
     val simulated: StateFlow<Boolean> = _simulated
@@ -60,11 +58,13 @@ object WorkoutRunner {
         karoo = karooSystem
 
         val simulate = repository.library.map { it.simulate }.distinctUntilChanged()
+        // Without a selected workout there is nothing to drive, so don't subscribe to the ride streams.
+        val hasWorkout = repository.selectedWorkout.map { it != null }.distinctUntilChanged()
 
         scope.launch {
-            simulate.flatMapLatest { sim ->
+            combine(simulate, hasWorkout) { sim, has -> sim to has }.flatMapLatest { (sim, has) ->
                 _simulated.value = sim
-                val rideFlow = if (sim) SimulatedStreams.rideState() else karooSystem.consumerFlow<RideState>()
+                if (!has) return@flatMapLatest flowOf(WorkoutUpdate(null))
                 WorkoutCoordinator(
                     workout = repository.selectedWorkout,
                     // ELAPSED_TIME arrives in ms (real and simulated); convert once here.
@@ -72,7 +72,7 @@ object WorkoutRunner {
                         .elapsedSeconds(),
                     power = if (sim) SimulatedStreams.power { _state.value?.targetW } else karooSystem.streamDataFlow(DataType.Type.POWER),
                     heartRate = if (sim) SimulatedStreams.heartRate() else karooSystem.streamDataFlow(DataType.Type.HEART_RATE),
-                    rideState = rideFlow.onEach { _rideState.value = it },
+                    rideState = if (sim) SimulatedStreams.rideState() else karooSystem.consumerFlow<RideState>(),
                     commands = commands,
                 ).run()
             }.collect { update ->

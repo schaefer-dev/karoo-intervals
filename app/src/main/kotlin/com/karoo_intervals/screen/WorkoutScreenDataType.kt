@@ -19,16 +19,19 @@ import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.Emitter
 import io.hammerhead.karooext.internal.ViewEmitter
 import io.hammerhead.karooext.models.DataType
-import io.hammerhead.karooext.models.RideState
 import io.hammerhead.karooext.models.StreamState
 import io.hammerhead.karooext.models.UpdateGraphicConfig
 import io.hammerhead.karooext.models.ViewConfig
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
@@ -50,18 +53,31 @@ class WorkoutScreenDataType(
         emitter.onNext(StreamState.NotAvailable)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
         val scope = CoroutineScope(Dispatchers.IO)
         android.util.Log.i("IntervalsScreen", "startView grid=${config.gridSize} view=${config.viewSize} preview=${config.preview}")
         emitter.onNext(UpdateGraphicConfig(showHeader = false))
         scope.launch {
             if (config.preview) {
-                emitter.updateView(build(context, config, previewInput(), pooled = false))
+                emitter.updateView(build(context, config, previewInput(), taps = null, pooled = false))
                 return@launch
             }
-            val power = karooSystem.streamDataFlow(DataType.Type.SMOOTHED_3S_AVERAGE_POWER).value().onStart { emit(null) }
-            val hr = karooSystem.streamDataFlow(DataType.Type.HEART_RATE).value().onStart { emit(null) }
-            combine(WorkoutRunner.state, WorkoutRunner.rideState, WorkoutRunner.simulated, power, hr) { st, ride, sim, p, h ->
+            // PendingIntent lookups are IPC to system_server: create them once per view, not per frame.
+            val taps = Taps(context)
+            // Live power/HR are only drawn when no workout is loaded (the session carries its own
+            // values otherwise), so only subscribe to them then. Otherwise their unsynchronised
+            // ~1 Hz updates would trigger extra, pixel-identical full-screen frames.
+            val live = WorkoutRunner.state.map { it == null }.distinctUntilChanged().flatMapLatest { idle ->
+                if (idle) {
+                    val power = karooSystem.streamDataFlow(DataType.Type.SMOOTHED_3S_AVERAGE_POWER).value().onStart { emit(null) }
+                    val hr = karooSystem.streamDataFlow(DataType.Type.HEART_RATE).value().onStart { emit(null) }
+                    combine(power, hr) { p, h -> p to h }
+                } else {
+                    flowOf(null to null)
+                }
+            }
+            combine(WorkoutRunner.state, WorkoutRunner.simulated, live) { st, sim, (p, h) ->
                 WorkoutScreenRenderer.Input(
                     state = st,
                     livePower = p,
@@ -69,8 +85,8 @@ class WorkoutScreenDataType(
                     paused = st?.paused == true,
                     simulated = sim,
                 )
-            }.conflate().collect { input ->
-                emitter.updateView(build(context, config, input, pooled = true))
+            }.distinctUntilChanged().conflate().collect { input ->
+                emitter.updateView(build(context, config, input, taps, pooled = true))
                 delay(MIN_FRAME_MS)
             }
         }
@@ -80,7 +96,13 @@ class WorkoutScreenDataType(
     private fun kotlinx.coroutines.flow.Flow<StreamState>.value() =
         map { (it as? StreamState.Streaming)?.dataPoint?.singleValue?.toInt() }
 
-    private fun build(context: Context, config: ViewConfig, input: WorkoutScreenRenderer.Input, pooled: Boolean): RemoteViews {
+    private fun build(
+        context: Context,
+        config: ViewConfig,
+        input: WorkoutScreenRenderer.Input,
+        taps: Taps?,
+        pooled: Boolean,
+    ): RemoteViews {
         val (w, h) = config.viewSize
         val dark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
@@ -91,29 +113,33 @@ class WorkoutScreenDataType(
 
         val rv = RemoteViews(context.packageName, R.layout.field_workout)
         rv.setImageViewBitmap(R.id.screen, bmp)
-        if (!config.preview) {
-            val open = PendingIntent.getActivity(
-                context, 0,
-                Intent(context, WorkoutsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-            )
-            rv.setOnClickPendingIntent(R.id.tap_settings, open)
-            rv.setOnClickPendingIntent(R.id.tap_pause, broadcast(context, TapReceiver.ACTION_PAUSE))
-            rv.setOnClickPendingIntent(R.id.tap_skip, broadcast(context, TapReceiver.ACTION_SKIP))
+        if (taps != null) {
+            rv.setOnClickPendingIntent(R.id.tap_settings, taps.open)
+            rv.setOnClickPendingIntent(R.id.tap_pause, taps.pause)
+            rv.setOnClickPendingIntent(R.id.tap_skip, taps.skip)
             // Without a workout, the whole body opens the picker.
-            rv.setOnClickPendingIntent(
-                R.id.tap_body,
-                if (input.state == null) open else broadcast(context, TapReceiver.ACTION_NONE),
-            )
+            rv.setOnClickPendingIntent(R.id.tap_body, if (input.state == null) taps.open else taps.none)
         }
         return rv
     }
 
-    private fun broadcast(context: Context, action: String): PendingIntent = PendingIntent.getBroadcast(
-        context, action.hashCode(),
-        Intent(action).setComponent(ComponentName(context, TapReceiver::class.java)),
-        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-    )
+    /** The screen's tap targets, resolved once per view. */
+    private class Taps(context: Context) {
+        val open: PendingIntent = PendingIntent.getActivity(
+            context, 0,
+            Intent(context, WorkoutsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val pause = broadcast(context, TapReceiver.ACTION_PAUSE)
+        val skip = broadcast(context, TapReceiver.ACTION_SKIP)
+        val none = broadcast(context, TapReceiver.ACTION_NONE)
+
+        private fun broadcast(context: Context, action: String): PendingIntent = PendingIntent.getBroadcast(
+            context, action.hashCode(),
+            Intent(action).setComponent(ComponentName(context, TapReceiver::class.java)),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+    }
 
     private fun previewInput(): WorkoutScreenRenderer.Input {
         val steps = buildList {

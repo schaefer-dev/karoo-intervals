@@ -36,8 +36,9 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 ./gradlew :app:assembleDebug
 ```
 
-`.env` (git-ignored) holds `INTERVALS_ICU_API_KEY=...`; only debug builds embed it. Release users
-enter their key in the app (👤). Test fixtures in `app/src/test/resources/` are trimmed real API
+`.env` (git-ignored) holds `INTERVALS_ICU_API_KEY=...`; only debug and `personal` builds embed it.
+`assembleRelease` stays keyless (shareable; users enter their key in the app, 👤).
+`assemblePersonal` = release settings + key, for the owner's own Karoo only. Test fixtures in `app/src/test/resources/` are trimmed real API
 responses — never commit personal fields (email, api key) into them.
 
 Debug builds have a simulator toggle (👤 section): synthetic streams at 5× speed, power follows target.
